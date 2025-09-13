@@ -7,6 +7,8 @@ A **minimal, self-contained Maven project** that shows how to:
 * run it directly from the IntelliJ IDE or with `mvn exec:java`,
 * create a **single runnable (uber) JAR** with the Maven Shade plugin.
 
+Yes, this could and would probably be better as a Maven archetype.
+
 ---  
 
 ## Table of Contents
@@ -22,7 +24,7 @@ A **minimal, self-contained Maven project** that shows how to:
 | [Run the shaded JAR](#run-the-shaded-jar)               | `java -jar …`                                        |
 | [Changing the main class](#changing-the-main-class)     | How to point to a different class                    |
 | [FAQ / Troubleshooting](#faq--troubleshooting)          | Common hiccups                                       |
-| [Using `customize.sh`](#using-customizesh)              | One-click project customisation                      |
+| [Using `customize.sh`](#using-customizesh)              | One-command project customization                    |
 | [License](#license)                                     | MIT                                                  |
 
 ---  
