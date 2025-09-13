@@ -135,6 +135,7 @@
                     <!-- Launch a new JVM so we can set VM options -->
                     <executable>${java.home}/bin/java</executable>
                     <arguments>
+                        <argument>-XX:+IgnoreUnrecognizedVMOptions</argument>
                         <argument>-XstartOnFirstThread</argument>
                         <argument>-jar</argument>
                         <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
