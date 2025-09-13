@@ -1,0 +1,162 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ========================================================= -->
+    <!--  Project coordinates                                       -->
+    <!-- ========================================================= -->
+    <groupId>com.mycompany</groupId>
+    <artifactId>my-jme-app</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>My JME Application</name>
+    <description>Simple JME app packaged as a single runnable JAR</description>
+
+    <!-- ========================================================= -->
+    <!--  Java version                                               -->
+    <!-- ========================================================= -->
+    <properties>
+        <maven.compiler.source>24</maven.compiler.source>
+        <maven.compiler.target>24</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Change this to the fully‑qualified name of your entry point -->
+        <mainClass>org.example.App</mainClass>
+    </properties>
+
+    <!-- ========================================================= -->
+    <!--  Dependencies                                               -->
+    <!-- ========================================================= -->
+    <dependencies>
+        <!-- JME core -->
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-core</artifactId>
+            <version>3.8.1-stable</version>
+        </dependency>
+
+        <!-- JME desktop (AWT) -->
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-desktop</artifactId>
+            <version>3.8.1-stable</version>
+        </dependency>
+
+        <!-- JME LWJGL3 backend (the usual choice for modern JME) -->
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-lwjgl3</artifactId>
+            <version>3.8.1-stable</version>
+        </dependency>
+
+        <!-- Optional: if you need physics, audio, etc. add them here -->
+        <!--
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-bullet</artifactId>
+            <version>3.8.1-stable</version>
+        </dependency>
+        -->
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ========================================================= -->
+    <!--  Build plugins (Shade = uber‑jar)                           -->
+    <!-- ========================================================= -->
+    <build>
+        <plugins>
+
+            <!-- Maven Compiler (already configured via properties) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.12.0</version>
+            </plugin>
+
+            <!-- Maven Shade – creates the single runnable JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Set the entry point -->
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${mainClass}</mainClass>
+                                </transformer>
+                            </transformers>
+
+                            <!-- Merge service files (required for JME’s SPI) -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <!-- keep everything, but you can exclude unwanted resources -->
+                                    </excludes>
+                                </filter>
+                            </filters>
+
+                            <!-- Relocate no‑conflict packages (optional) -->
+                            <!--
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.lwjgl</pattern>
+                                    <shadedPattern>shaded.org.lwjgl</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ========================================================= -->
+            <!--  Exec Maven Plugin – runs the app via `mvn run`   -->
+            <!-- ========================================================= -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <!-- Bind the "run" goal to a custom lifecycle phase (optional) -->
+                    <execution>
+                        <id>default-cli</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- The class that contains the main() method -->
+                    <mainClass>${mainClass}</mainClass>
+
+                    <!-- Use the runtime classpath (includes all dependencies) -->
+                    <classpathScope>runtime</classpathScope>
+
+                    <!-- If you want to pass arguments, uncomment & edit -->
+                    <!--
+                    <arguments>
+                        <argument>firstArg</argument>
+                        <argument>secondArg</argument>
+                    </arguments>
+                    -->
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>
