@@ -11,8 +11,9 @@
           </option>
           <option name="goals">
             <list>
-              <option value="compile" />
-              <option value="exec:java" />
+              <option value="clean" />
+              <option value="package" />
+              <option value="exec:exec" />
             </list>
           </option>
           <option name="multimoduleDir" />
