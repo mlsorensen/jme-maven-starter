@@ -155,7 +155,7 @@ This is a game built with jMonkeyEngine.
 Compile and run using Maven:
 
 \`\`\`bash
-mvn compile exec:java
+mvn clean package exec:exec
 \`\`\`
 
 The main class is:
