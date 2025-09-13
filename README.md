@@ -9,6 +9,28 @@ A **minimal, self-contained Maven project** that shows how to:
 
 Yes, this could and would probably be better as a Maven archetype.
 
+---
+
+### TL;DR (quick cheat-sheet)
+
+```bash
+# Clone & import
+git clone git@github.com:mlsorensen/jme-maven-starter.git my-new-game
+cd my-new-game
+
+# (Optional) customise the project in one step
+./customize.sh   # answer the prompts or set env vars as shown above
+
+# Run directly
+mvn package exec:exec
+
+# Build a single JAR
+mvn clean package
+java -jar target/my-new-game-0.1.0.jar
+or on MacOS:
+java -XstartOnFirstThread -jar target/my-new-game-0.1.0.jar
+```
+
 ---  
 
 ## Table of Contents
@@ -297,23 +319,5 @@ GROUP_ID=com.mycompany.game  ARTIFACT_ID=awesome-space-shooter  VERSION=0.1.0-SN
 This starter project is released under the **MIT License** – feel free to fork, modify, and ship your own games.
 
 ---  
-
-### TL;DR (quick cheat-sheet)
-
-```bash
-# Clone & import
-git clone https://github.com/yourname/my-jme-app.git
-cd my-jme-app
-
-# (Optional) customise the project in one step
-./customize.sh   # answer the prompts or set env vars as shown above
-
-# Run directly
-mvn compile exec:java
-
-# Build a single JAR
-mvn clean package
-java -jar target/my-jme-app-1.0.0-shaded.jar
-```
 
 Happy coding, and enjoy the 3-D fun with jMonkeyEngine! 🚀  

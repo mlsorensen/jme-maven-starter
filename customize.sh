@@ -4,6 +4,15 @@ set -euo pipefail
 # --- helper functions -------------------------------------------------------
 lower() { echo "$1" | tr '[:upper:]' '[:lower:]'; }
 
+# Cross-platform sed -i
+sedi() {
+  if [[ "$(uname)" == "Darwin" ]]; then
+    sed -i '' "$@"
+  else
+    sed -i "$@"
+  fi
+}
+
 # sanitize a package segment: lowercase, replace non a-z0-9 and leading/trailing dots with _
 sanitize_pkg_segment() {
   local s="$1"
@@ -42,15 +51,15 @@ echo
 
 # --- discover old coordinates / package ------------------------------------
 # Try to detect the package used in sources first
-DETECTED_OLD_PACKAGE="$(grep -RhoP '^[[:space:]]*package[[:space:]]+\K[a-zA-Z0-9_.]+' src/main/java 2>/dev/null | head -n1 || true)"
+DETECTED_OLD_PACKAGE="$(find src/main/java -name "*.java" -print0 | xargs -0 grep -h '^[[:space:]]*package' | head -n1 | sed -E 's/^[[:space:]]*package[[:space:]]+//;s/;//' || true)"
 
 if [ -n "$DETECTED_OLD_PACKAGE" ]; then
   OLD_PACKAGE="$DETECTED_OLD_PACKAGE"
   echo "Detected existing Java package: $OLD_PACKAGE"
 else
   # fallback: read first <groupId> and <artifactId> from pom.xml (first occurrence)
-  OLD_GROUPID="$(grep -m1 -oP '(?<=<groupId>).*?(?=</groupId>)' pom.xml || true)"
-  OLD_ARTIFACTID="$(grep -m1 -oP '(?<=<artifactId>).*?(?=</artifactId>)' pom.xml || true)"
+  OLD_GROUPID="$(sed -n 's/.*<groupId>\(.*\)<\/groupId>.*/\1/p' pom.xml | head -n1 || true)"
+  OLD_ARTIFACTID="$(sed -n 's/.*<artifactId>\(.*\)<\/artifactId>.*/\1/p' pom.xml | head -n1 || true)"
   if [ -z "$OLD_GROUPID" ] || [ -z "$OLD_ARTIFACTID" ]; then
     echo "Warning: couldn't auto-detect existing package or pom coordinates. Using defaults."
     OLD_GROUPID="com.mlsorensen"
@@ -62,19 +71,19 @@ else
 fi
 
 # Also detect old groupId for fallback replacements
-OLD_GROUPID_FROM_POM="$(grep -m1 -oP '(?<=<groupId>).*?(?=</groupId>)' pom.xml || true)"
+OLD_GROUPID_FROM_POM="$(sed -n 's/.*<groupId>\(.*\)<\/groupId>.*/\1/p' pom.xml | head -n1 || true)"
 [ -n "$OLD_GROUPID_FROM_POM" ] && OLD_GROUPID="$OLD_GROUPID_FROM_POM"
 
 # --- update pom: only first occurrences of coordinates ----------------------
 echo "Updating top-level POM coordinates..."
 # replace first occurrences only (safer than global replace)
-sed -i "0,/<groupId>.*<\/groupId>/s//<groupId>$NEW_GROUPID<\/groupId>/" pom.xml
-sed -i "0,/<artifactId>.*<\/artifactId>/s//<artifactId>$NEW_ARTIFACT_SEGMENT<\/artifactId>/" pom.xml
-sed -i "0,/<version>.*<\/version>/s//<version>$NEW_VERSION<\/version>/" pom.xml
+sedi "1,/<groupId>/s|<groupId>.*</groupId>|<groupId>$NEW_GROUPID</groupId>|" pom.xml
+sedi "1,/<artifactId>/s|<artifactId>.*</artifactId>|<artifactId>$NEW_ARTIFACT_SEGMENT</artifactId>|" pom.xml
+sedi "1,/<version>/s|<version>.*</version>|<version>$NEW_VERSION</version>|" pom.xml
 
 # update properties.mainClass (first occurrence)
 echo "Updating properties.mainClass to $NEW_MAINCLASS"
-sed -i "0,/<mainClass>.*<\/mainClass>/s//<mainClass>$NEW_MAINCLASS<\/mainClass>/" pom.xml
+sedi "1,/<mainClass>/s|<mainClass>.*</mainClass>|<mainClass>$NEW_MAINCLASS</mainClass>|" pom.xml
 
 # --- prepare escaped patterns for sed --------------------------------------
 OLD_PKG_RE="$(escape_for_sed "$OLD_PACKAGE")"
@@ -92,7 +101,7 @@ for tree in src/main/java src/test/java; do
     find "$tree" -name "*.java" -print0 | while IFS= read -r -d '' f; do
       # if file contains the old package as prefix in its package declaration -> replace
       # use sed with regex: ^\s*package\s+OLD_PACKAGE(.*);
-      sed -E -i "s|^([[:space:]]*package[[:space:]]+)$OLD_PKG_RE(.*;)|\1$NEW_PACKAGE\2|" "$f"
+      sedi -E "s|^([[:space:]]*package[[:space:]]+)$OLD_PKG_RE(.*;)|\1$NEW_PACKAGE\2|" "$f"
     done
   fi
 done
@@ -101,10 +110,10 @@ done
 # Do this globally across all java files under src
 if find src -type f -name "*.java" | grep -q .; then
   # replace occurrences of the old package root with the new one
-  find src -type f -name "*.java" -print0 | xargs -0 -n1 sed -i "s/$OLD_PKG_RE/$NEW_PACKAGE/g" || true
+  find src -type f -name "*.java" -print0 | xargs -0 -n1 sedi "s/$OLD_PKG_RE/$NEW_PACKAGE/g" || true
   # also replace occurrences of the old group id prefix (fallback)
   if [ -n "$OLD_GROUPID" ]; then
-    find src -type f -name "*.java" -print0 | xargs -0 -n1 sed -i "s/$OLD_GROUP_RE/$NEW_GROUPID/g" || true
+    find src -type f -name "*.java" -print0 | xargs -0 -n1 sedi "s/$OLD_GROUP_RE/$NEW_GROUPID/g" || true
   fi
 fi
 
@@ -146,7 +155,7 @@ This is a game built with jMonkeyEngine.
 Compile and run using Maven:
 
 \`\`\`bash
-mvn compile exec:java
+mvn clean package exec:exec
 \`\`\`
 
 The main class is:
