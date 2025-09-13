@@ -125,35 +125,20 @@
             </plugin>
 
             <!-- ========================================================= -->
-            <!--  Exec Maven Plugin – runs the app via `mvn run`   -->
+            <!--  Exec Maven Plugin – runs the app via `mvn exec:exec`     -->
             <!-- ========================================================= -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.4.0</version>
-                <executions>
-                    <!-- Bind the "run" goal to a custom lifecycle phase (optional) -->
-                    <execution>
-                        <id>default-cli</id>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <version>3.5.0</version>
                 <configuration>
-                    <!-- The class that contains the main() method -->
-                    <mainClass>${mainClass}</mainClass>
-
-                    <!-- Use the runtime classpath (includes all dependencies) -->
-                    <classpathScope>runtime</classpathScope>
-
-                    <!-- If you want to pass arguments, uncomment & edit -->
-                    <!--
+                    <!-- Launch a new JVM so we can set VM options -->
+                    <executable>${java.home}/bin/java</executable>
                     <arguments>
-                        <argument>firstArg</argument>
-                        <argument>secondArg</argument>
+                        <argument>-XstartOnFirstThread</argument>
+                        <argument>-jar</argument>
+                        <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
                     </arguments>
-                    -->
                 </configuration>
             </plugin>
 
