@@ -1,4 +1,4 @@
-# My‑JME‑App  *(jMonkeyEngine 3.8 starter with Maven)*
+# jMonkeyEngine 3.8 starter with Maven
 
 A **minimal, self‑contained Maven project** that shows how to:
 
