@@ -156,6 +156,26 @@ $NEW_MAINCLASS
 \`\`\`
 EOF
 
+# 1. Confirm with user
+echo "This will completely reset Git history and disconnect from the original repo."
+read -p "Do you want to reinitialize Git for this project? (y/N): " confirm
+if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    echo "Removing old Git history..."
+    rm -rf .git
+
+    echo "Initializing new Git repository..."
+    git init
+
+    echo "Adding initial files to Git..."
+    git add .
+    git commit -m "Initial commit for customized project"
+
+    echo "Git has been reinitialized. Remember to set a new remote:"
+    echo "  git remote add origin <your-new-repo-url>"
+else
+    echo "Skipping Git reinitialization."
+fi
+
 echo
 echo "Done. Project customized for:"
 echo "  $NEW_GROUPID:$NEW_ARTIFACT_SEGMENT:$NEW_VERSION"
